@@ -5,6 +5,7 @@ services:
     image: nginx
     volumes:
     - ./docker/nginx/services:/etc/nginx/conf.d/
+    - ./:/var/www/html
     ports:
       - "80:80"
 
@@ -15,6 +16,7 @@ services:
       - .env
     volumes:
       - .:/var/www/html
+      - ./docker/app/php-fpm/www.conf:/etc/php/7.4/fpm/pool.d/www.conf
 
   mysql.database:
     image: mysql
