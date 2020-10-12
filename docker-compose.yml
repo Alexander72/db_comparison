@@ -1,0 +1,41 @@
+version: '3.5'
+
+services:
+  frontend:
+    image: nginx
+    volumes:
+    - ./docker/nginx/services:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
+
+  app:
+    build:
+      context: .
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www/html
+
+  mysql.database:
+    image: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+    - ./var/database_data/mysql:/var/lib/mysql
+
+  mongodb.database:
+    image: mongo
+    ports:
+    - 27017:27017
+    #- 27018:27018
+    #- 27019:27019
+    volumes:
+      - ./var/database_data/mongo:/data/db
+
+  cassandra.database:
+    image: cassandra
+    volumes:
+      - ./var/database_data/cassandra:/var/lib/cannadra
+    ports:
+      - 9042:9042
+
