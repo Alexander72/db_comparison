@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    <style>
+        .chart canvas {
+            background: #eff2f8;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="row">
+        <div class="col chart">
+            <canvas id="insertChart"></canvas>
+        </div>
+        <div class="col chart">
+            <canvas id="updateChart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <script>
+        renderChart($('#insertChart'), {{ insertData | json_encode | raw }});
+        renderChart($('#updateChart'), {{ updateData | json_encode | raw }});
+    </script>
+{% endblock %}
