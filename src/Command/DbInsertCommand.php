@@ -22,6 +22,7 @@ class DbInsertCommand extends Command
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
+        parent::__construct();
     }
 
     protected function configure()
@@ -39,6 +40,7 @@ class DbInsertCommand extends Command
         $data = $this->getDataToWrite();
         foreach ($data as $entityData) {
             $entity = Entity::createFromData($entityData);
+            $repository->insert($entity);
         }
 
         $io->success('Data was successfully inserted to db');

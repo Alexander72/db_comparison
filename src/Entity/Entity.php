@@ -39,4 +39,37 @@ class Entity
     {
         return $this->id;
     }
+
+    /**
+     * @return string
+     */
+    public function getOrigin(): string
+    {
+        return $this->origin;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDestination(): string
+    {
+        return $this->destination;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPrice(): int
+    {
+        return $this->price;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDeparture(): string
+    {
+        return $this->departure;
+    }
+
 }

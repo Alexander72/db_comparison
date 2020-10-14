@@ -84,6 +84,9 @@
     "egulias/email-validator": {
         "version": "2.1.22"
     },
+    "jean85/pretty-package-versions": {
+        "version": "1.5.1"
+    },
     "laminas/laminas-code": {
         "version": "3.4.1"
     },
@@ -92,6 +95,9 @@
     },
     "laminas/laminas-zendframework-bridge": {
         "version": "1.1.1"
+    },
+    "mongodb/mongodb": {
+        "version": "1.7.1"
     },
     "monolog/monolog": {
         "version": "2.1.1"
