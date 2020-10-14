@@ -22,6 +22,8 @@ services:
     image: mysql
     ports:
       - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
     volumes:
     - ./var/database_data/mysql:/var/lib/mysql
 
@@ -31,8 +33,13 @@ services:
     - 27017:27017
     #- 27018:27018
     #- 27019:27019
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
+      - ./docker/mongodb/mongod.conf:/etc/mongod.conf
       - ./var/database_data/mongo:/data/db
+    command: ["-f", "/etc/mongod.conf"]
 
   cassandra.database:
     image: cassandra
