@@ -1,5 +1,5 @@
 .idea
-
+input/routes.csv
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
