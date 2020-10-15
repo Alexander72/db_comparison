@@ -4,21 +4,12 @@ namespace App\Repository;
 
 use App\Entity\Entity;
 use App\Repository\Contract\EntityRepository;
-use MongoDB\Client;
-use MongoDB\Collection;
 
-class MongoEntityRepository implements EntityRepository
+class MysqlEntityRepository implements EntityRepository
 {
-    private Collection $collection;
-
-    public function __construct()
-    {
-        $this->collection = (new Client('mongodb://root:password@mongodb.database'))->db_comparison_test->route;
-    }
-
     public function insert(array $entity): void
     {
-        $this->collection->insertOne($entity);
+        // TODO: Implement insert() method.
     }
 
     public function update(Entity $entity): void
@@ -35,5 +26,4 @@ class MongoEntityRepository implements EntityRepository
     {
         // TODO: Implement deleteById() method.
     }
-
 }

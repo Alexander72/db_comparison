@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Entity;
 use App\Repository\Contract\EntityRepository;
+use App\Service\BenchmarkService;
 use DateTime;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -19,9 +20,14 @@ class DbInsertCommand extends Command
 
     private ContainerInterface $container;
 
-    public function __construct(ContainerInterface $container)
-    {
+    private BenchmarkService $benchmarkService;
+
+    public function __construct(
+        ContainerInterface $container,
+        BenchmarkService $benchmarkService
+    ) {
         $this->container = $container;
+        $this->benchmarkService = $benchmarkService;
         parent::__construct();
     }
 
@@ -37,33 +43,42 @@ class DbInsertCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $repository = $this->getRepository($input);
 
-        $data = $this->getDataToWrite();
-        foreach ($data as $entityData) {
-            $entity = Entity::createFromData($entityData);
-            $repository->insert($entity);
-        }
+        $count = 0;
+        foreach ($this->getDataToWrite() as $entityData) {
+            if ($count == 0) {
+                $this->benchmarkService->start();
+            }
 
-        $io->success('Data was successfully inserted to db');
+            $repository->insert($entityData);
+
+            $this->benchmarkService->operationHasBeenMade();
+
+            $count++;
+        }
+        $this->benchmarkService->finish($count);
+
+        $io->success("$count rows were successfully inserted in db");
 
         return Command::SUCCESS;
     }
 
-    private function getDataToWrite(): array
+    private function getDataToWrite(): \Generator
     {
-        return [
-            [
-                'origin' => 'AMS',
-                'destination' => 'MOW',
-                'price' => 12304,
-                'departure' => '2020-12-03',
-            ],
-            [
-                'origin' => 'MOW',
-                'destination' => 'AMS',
-                'price' => 10304,
-                'departure' => '2020-12-04',
-            ],
-        ];
+        $f = fopen(__DIR__ . '/../../input/routes_small.csv', 'r');
+        while (($data = fgetcsv($f)) !== FALSE) {
+            $row = array_combine([
+                'origin',
+                'destination',
+                'price',
+                'departure',
+                'saved'
+            ], $data);
+
+            $row['price'] = (int) $row['price'];
+
+            yield $row;
+        }
+        fclose($f);
     }
 
     protected function getRepository(InputInterface $input): EntityRepository
