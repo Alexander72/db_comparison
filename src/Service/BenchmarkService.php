@@ -97,7 +97,10 @@ class BenchmarkService
     {
         $result = [];
         foreach ($this->operations as $operation) {
-
+            $result[] = [
+                //operationIndex
+                //averageDuration
+            ];
         }
 
         return $result;
