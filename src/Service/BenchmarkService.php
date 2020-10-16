@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use Exception;
+
 class BenchmarkService
 {
     const LOGARITHMIC_STRATEGY = 'logarithmic';
@@ -28,6 +30,8 @@ class BenchmarkService
 
     public function operationHasBeenMade()
     {
+        $this->currentOperation++;
+
         if ($this->shouldBeLogged()) {
             $this->logOperation();
         }
@@ -58,27 +62,44 @@ class BenchmarkService
         switch($this->strategy)
         {
             case self::LOGARITHMIC_STRATEGY:
-
+                return $this->isValuePowOfBase($this->currentOperation, 2);
             default:
-                throw new \Exception('Unsupported strategy: ' . $this->strategy);
+                throw new Exception('Unsupported strategy: ' . $this->strategy);
         }
     }
 
     private function logOperation(): void
     {
-        $this->currentOperation++;
         $this->operations[] = [
             'operation' => $this->currentOperation,
-            'duration' => $this->lastOperationsExecutionTime(),
+            'timestamp' => microtime(true),
         ];
     }
 
-    private function lastOperationsExecutionTime(): float
+    private function isValuePowOfBase(int $value, int $base)
     {
-        if (empty($this->operations)) {
-            return microtime(true) - $this->startTime;
-        } else {
-            return microtime(true) - $this->operations[count($this->operations) - 1]['duration'];
+        if ($base <= 1) {
+            throw new Exception("Base cannot be less or equal to 1: $base.");
         }
+
+        $currentValue = 1;
+        do {
+            if ($currentValue == $value) {
+                return true;
+            }
+            $currentValue *= $base;
+        } while ($currentValue <= $value);
+
+        return false;
+    }
+
+    public function getReport(): array
+    {
+        $result = [];
+        foreach ($this->operations as $operation) {
+
+        }
+
+        return $result;
     }
 }

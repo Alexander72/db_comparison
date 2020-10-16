@@ -46,7 +46,7 @@ class DbInsertCommand extends Command
         $count = 0;
         foreach ($this->getDataToWrite() as $entityData) {
             if ($count == 0) {
-                $this->benchmarkService->start();
+                $this->benchmarkService->start(34);
             }
 
             $repository->insert($entityData);
@@ -55,9 +55,16 @@ class DbInsertCommand extends Command
 
             $count++;
         }
-        $this->benchmarkService->finish($count);
+        $this->benchmarkService->finish();
 
         $io->success("$count rows were successfully inserted in db");
+        $io->table(
+            [
+                'operationIndex',
+                'duration',
+            ],
+            $this->benchmarkService->getReport()
+        );
 
         return Command::SUCCESS;
     }
