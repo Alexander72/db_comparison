@@ -8,21 +8,22 @@ class HomeController extends AbstractController
 {
     public function index()
     {
+        $length = 20;
         $data = [
             'insertData' => [
-                'xAxis' => $this->generateLogarithmicXAxis(20),
+                'xAxis' => $this->generateLogarithmicXAxis($length),
                 'data' => [
-                    'MySQL' => $this->generateRandomLogarithmicData(20),
-                    'Mongo' => $this->generateRandomLogarithmicData(20),
-                    'Cassandra' => $this->generateRandomLogarithmicData(20),
+                    'MySQL' => $this->generateRandomLogarithmicData($length),
+                    'Mongo' => $this->generateRandomLogarithmicData($length),
+                    'Cassandra' => $this->generateRandomLogarithmicData($length),
                 ]
             ],
             'updateData' => [
-                'xAxis' => $this->generateLogarithmicXAxis(20),
+                'xAxis' => $this->generateLogarithmicXAxis($length),
                 'data' => [
-                    'MySQL' => $this->generateRandomLogarithmicData(20),
-                    'Mongo' => $this->generateRandomLogarithmicData(20),
-                    'Cassandra' => $this->generateRandomLogarithmicData(20),
+                    'MySQL' => $this->generateRandomLogarithmicData($length),
+                    'Mongo' => $this->generateRandomLogarithmicData($length),
+                    'Cassandra' => $this->generateRandomLogarithmicData($length),
                 ]
             ],
         ];
@@ -31,14 +32,21 @@ class HomeController extends AbstractController
 
     protected function generateRandomLogarithmicData(int $length): array
     {
-        return [4, 5, 8, 10, 14, 16, 20];
+        $result = [];
+        for ($i = 1; $i <= $length; $i++) {
+            $result[] = log((float) $i, 2) + rand(0, (int) (log((float) max(0, $i - 1), 2)));
+        }
+
+        return $result;
     }
 
     private function generateLogarithmicXAxis(int $length)
     {
         $result = [];
         for ($i = 0; $i < $length; $i++) {
-
+            $result[] = empty($result) ? 1 : $result[count($result) - 1] * 2;
         }
+
+        return $result;
     }
 }
