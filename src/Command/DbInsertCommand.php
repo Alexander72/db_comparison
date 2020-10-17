@@ -2,20 +2,21 @@
 
 namespace App\Command;
 
-use App\Entity\Entity;
 use App\Repository\Contract\EntityRepository;
 use App\Service\BenchmarkService;
-use DateTime;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DbInsertCommand extends Command
 {
+    //const SOURCE_FILE_NAME = __DIR__ . '/../../input/routes_small.csv';
+    const SOURCE_FILE_NAME = __DIR__ . '/../../input/routes.csv';
+    const INPUT_STRING_LENGTH = 54.5;
+
     protected static $defaultName = 'db:insert';
 
     private ContainerInterface $container;
@@ -43,21 +44,26 @@ class DbInsertCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $repository = $this->getRepository($input);
 
-        $count = 0;
-        foreach ($this->getDataToWrite() as $entityData) {
-            if ($count == 0) {
-                $this->benchmarkService->start(34);
+        $entitiesCount = $this->getEntityCount();
+        $io->note('Starting data insertion.');
+        $progressBar = $io->createProgressBar($entitiesCount);
+        $progressBar->start();//started at 21:17| 15% - 21:34 | 60% - 22:20
+        foreach ($this->getDataToInsert() as $index => $entityData) {
+            if ($index == 0) {
+                $this->benchmarkService->start($entitiesCount);
             }
+
+            $progressBar->advance();
 
             $repository->insert($entityData);
 
             $this->benchmarkService->operationHasBeenMade();
-
-            $count++;
         }
         $this->benchmarkService->finish();
+        $progressBar->finish();
+        $io->newLine(2);
 
-        $io->success("$count rows were successfully inserted in db");
+        $io->success("$entitiesCount rows were successfully inserted in db in {$this->benchmarkService->getTotalExecutionTime()} seconds.");
         $io->table(
             [
                 'operationIndex',
@@ -69,21 +75,13 @@ class DbInsertCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function getDataToWrite(): \Generator
+    private function getDataToInsert(): \Generator
     {
-        $f = fopen(__DIR__ . '/../../input/routes_small.csv', 'r');
+        $rowIndex = 0;
+        $f = fopen(self::SOURCE_FILE_NAME, 'r');
         while (($data = fgetcsv($f)) !== FALSE) {
-            $row = array_combine([
-                'origin',
-                'destination',
-                'price',
-                'departure',
-                'saved'
-            ], $data);
-
-            $row['price'] = (int) $row['price'];
-
-            yield $row;
+            $row = $this->getRowForInsertion($data);
+            yield $rowIndex++ => $row;
         }
         fclose($f);
     }
@@ -91,5 +89,25 @@ class DbInsertCommand extends Command
     protected function getRepository(InputInterface $input): EntityRepository
     {
         return $this->container->get($input->getArgument('db'));
+    }
+
+    private function getEntityCount(): int
+    {
+        $fileSize = filesize(self::SOURCE_FILE_NAME);
+        return round($fileSize / self::INPUT_STRING_LENGTH);
+    }
+
+    private function getRowForInsertion(?array $data): bool
+    {
+        $row = array_combine([
+            'origin',
+            'destination',
+            'price',
+            'departure',
+            'saved'
+        ], $data);
+
+        $row['price'] = (int)$row['price'];
+        return $row;
     }
 }

@@ -14,6 +14,7 @@ class MongoEntityRepository implements EntityRepository
     public function __construct()
     {
         $this->collection = (new Client('mongodb://root:password@mongodb.database'))->db_comparison_test->route;
+        $this->collection->findOne();
     }
 
     public function insert(array $entity): void

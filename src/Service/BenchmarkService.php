@@ -96,10 +96,13 @@ class BenchmarkService
     public function getReport(): array
     {
         $result = [];
-        foreach ($this->operations as $operation) {
+        foreach ($this->operations as $index => $operation) {
+            $previousOperationIndex = $index == 0 ? 0 : $this->operations[$index - 1]['operation'];
+            $previousOperationTimestamp = $index == 0 ? $this->startTime : $this->operations[$index - 1]['timestamp'];
+
             $result[] = [
-                //operationIndex
-                //averageDuration
+                $operation['operation'],
+                ($operation['timestamp'] - $previousOperationTimestamp) / ($operation['operation'] - $previousOperationIndex),
             ];
         }
 
