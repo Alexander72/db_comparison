@@ -2,30 +2,30 @@
 
 namespace App\Service;
 
-use Exception;
-
 class BenchmarkService
 {
-    const LOGARITHMIC_STRATEGY = 'logarithmic';
+    const OUTPUT_FILE_DIR = __DIR__ . '/../../var/output/';
 
     private float $startTime;
     private float $totalExecutionTime;
     private int $operationsCount;
-    private string $strategy;
     private int $currentOperation;
-    private array $operations;
+    private $outputFileDescriptor;
+    private int $totalLogRecords;
+    private string $outputFileName;
 
-    public function start(int $operationsCount, string $strategy = self::LOGARITHMIC_STRATEGY): void
-    {
-        $this->setOperationsCount($operationsCount);
-        $this->strategy = $strategy;
+
+    public function start(
+        string $name,
+        int $operationsCount,
+        int $totalLogRecords = 1000
+    ): void {
         $this->currentOperation = 0;
-        $this->startTime = microtime(true);
-    }
-
-    public function setOperationsCount(int $operationsCount): void
-    {
         $this->operationsCount = $operationsCount;
+        $this->totalLogRecords = $totalLogRecords;
+        $this->outputFileName = self::OUTPUT_FILE_DIR . $name . '.txt';
+        $this->outputFileDescriptor = fopen($this->outputFileName, 'w');
+        $this->startTime = microtime(true);
     }
 
     public function operationHasBeenMade()
@@ -40,6 +40,7 @@ class BenchmarkService
     public function finish(): void
     {
         $this->totalExecutionTime = microtime(true) - $this->startTime;
+        fclose($this->outputFileDescriptor);
     }
 
     public function getTotalExecutionTime(): float
@@ -57,55 +58,65 @@ class BenchmarkService
         return $this->operationsCount;
     }
 
+    /**
+     * total: 200
+     * total log records: 10
+     * 20, 40, 60, 80, 100, 120, 140, 160, 180, 200
+     * 35: false
+     * 40: true
+     * floor(200 / 10) = 20
+     * 35 % 20 != 0 -> false
+     * 40 % 20 == 0 -> true
+     */
     private function shouldBeLogged(): bool
     {
-        switch($this->strategy)
-        {
-            case self::LOGARITHMIC_STRATEGY:
-                return $this->isValuePowOfBase($this->currentOperation, 2);
-            default:
-                throw new Exception('Unsupported strategy: ' . $this->strategy);
+        if ($this->totalLogRecords >= $this->operationsCount) {
+            return true;
         }
+
+        return  $this->currentOperation % round($this->operationsCount / $this->totalLogRecords) == 0;
     }
 
     private function logOperation(): void
     {
-        $this->operations[] = [
+        fwrite($this->outputFileDescriptor, serialize([
             'operation' => $this->currentOperation,
             'timestamp' => microtime(true),
-        ];
-    }
-
-    private function isValuePowOfBase(int $value, int $base)
-    {
-        if ($base <= 1) {
-            throw new Exception("Base cannot be less or equal to 1: $base.");
-        }
-
-        $currentValue = 1;
-        do {
-            if ($currentValue == $value) {
-                return true;
-            }
-            $currentValue *= $base;
-        } while ($currentValue <= $value);
-
-        return false;
+        ]) . "\n");
     }
 
     public function getReport(): array
     {
         $result = [];
-        foreach ($this->operations as $index => $operation) {
-            $previousOperationIndex = $index == 0 ? 0 : $this->operations[$index - 1]['operation'];
-            $previousOperationTimestamp = $index == 0 ? $this->startTime : $this->operations[$index - 1]['timestamp'];
+
+        $index = 0;
+        $previousOperation = null;
+
+        $f = fopen($this->outputFileName, 'r');
+        while ($operation = fgets($f)) {
+            $operation = unserialize($operation);
+
+            $previousOperationIndex = $previousOperation['operation'] ?? 0;
+            $previousOperationTimestamp = $previousOperation['timestamp'] ?? $this->startTime;
 
             $result[] = [
                 $operation['operation'],
                 ($operation['timestamp'] - $previousOperationTimestamp) / ($operation['operation'] - $previousOperationIndex),
             ];
+
+            $previousOperation = $operation;
+
+            $index++;
         }
+        fclose($f);
 
         return $result;
+    }
+
+    public function __destruct()
+    {
+        if (gettype($this->outputFileDescriptor) == 'resource') {
+            fclose($this->outputFileDescriptor);
+        }
     }
 }

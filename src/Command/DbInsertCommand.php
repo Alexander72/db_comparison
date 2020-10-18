@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -36,7 +37,8 @@ class DbInsertCommand extends Command
     {
         $this
             ->setDescription('Writes data to specific db and calculates latencies.')
-            ->addArgument('db', InputArgument::REQUIRED, 'Db to write. Should be one of the: mysql, mongodb, cassandra');
+            ->addArgument('db', InputArgument::REQUIRED, 'Db to write. Should be one of the: mysql, mongodb, cassandra')
+            ->addOption('inputFile', 'i', InputOption::VALUE_REQUIRED, 'Source file to get data for insertion from. With only filename will look in input/ directory');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -44,13 +46,20 @@ class DbInsertCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $repository = $this->getRepository($input);
 
-        $entitiesCount = $this->getEntityCount();
+        $entitiesCount = $this->getEntityCount($input);
+
         $io->note('Starting data insertion.');
         $progressBar = $io->createProgressBar($entitiesCount);
-        $progressBar->start();//started at 21:17| 15% - 21:34 | 60% - 22:20
-        foreach ($this->getDataToInsert() as $index => $entityData) {
+        $progressBar->start();
+        foreach ($this->getDataToInsert($input) as $index => $entityData) {
             if ($index == 0) {
-                $this->benchmarkService->start($entitiesCount);
+                // started at 19:25
+                // 5% - 19:27
+                // 10% - 19:29
+                // 20% - 19:33
+                // 50% - 19:43
+                // 100% - 20:00
+                $this->benchmarkService->start($input->getArgument('db') . '_insert', $entitiesCount);
             }
 
             $progressBar->advance();
@@ -75,10 +84,10 @@ class DbInsertCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function getDataToInsert(): \Generator
+    private function getDataToInsert(InputInterface $input): \Generator
     {
         $rowIndex = 0;
-        $f = fopen(self::SOURCE_FILE_NAME, 'r');
+        $f = fopen($this->getSourceFileName($input), 'r');
         while (($data = fgetcsv($f)) !== FALSE) {
             $row = $this->getRowForInsertion($data);
             yield $rowIndex++ => $row;
@@ -91,13 +100,13 @@ class DbInsertCommand extends Command
         return $this->container->get($input->getArgument('db'));
     }
 
-    private function getEntityCount(): int
+    private function getEntityCount(InputInterface $input): int
     {
-        $fileSize = filesize(self::SOURCE_FILE_NAME);
+        $fileSize = filesize($this->getSourceFileName($input));
         return round($fileSize / self::INPUT_STRING_LENGTH);
     }
 
-    private function getRowForInsertion(?array $data): bool
+    private function getRowForInsertion(?array $data): array
     {
         $row = array_combine([
             'origin',
@@ -107,7 +116,25 @@ class DbInsertCommand extends Command
             'saved'
         ], $data);
 
-        $row['price'] = (int)$row['price'];
+        $row['price'] = (int) $row['price'];
+
         return $row;
+    }
+
+    private function getSourceFileName(InputInterface $input): string
+    {
+        $fileName = $input->getOption('inputFile');
+
+        if (file_exists($fileName)) {
+            return $fileName;
+        }
+
+        $fileName = __DIR__ . '/../../input/' . $fileName;
+
+        if (!file_exists($fileName)) {
+            throw new \Exception("File $fileName does not exist.");
+        }
+
+        return $fileName;
     }
 }
