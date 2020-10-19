@@ -2,19 +2,21 @@
 
 namespace App\Controller;
 
+use App\Service\Reporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class HomeController extends AbstractController
 {
-    public function index()
+    public function index(Reporter $reporter)
     {
-        $length = 20;
+        $reporter->loadData('mongo_insert');
+        $length = $reporter->getOperationsCount();
         $data = [
             'insertData' => [
-                'xAxis' => $this->generateLogarithmicXAxis($length),
+                'xAxis' => $this->prettifyIndexes($reporter),
                 'data' => [
                     'MySQL' => $this->generateRandomLogarithmicData($length),
-                    'Mongo' => $this->generateRandomLogarithmicData($length),
+                    'Mongo' => $reporter->getOperationDurations(),
                     'Cassandra' => $this->generateRandomLogarithmicData($length),
                 ]
             ],
@@ -34,7 +36,7 @@ class HomeController extends AbstractController
     {
         $result = [];
         for ($i = 1; $i <= $length; $i++) {
-            $result[] = log((float) $i, 2) + rand(0, (int) (log((float) max(0, $i - 1), 2)));
+            $result[] = 0;
         }
 
         return $result;
@@ -48,5 +50,12 @@ class HomeController extends AbstractController
         }
 
         return $result;
+    }
+
+    private function prettifyIndexes(Reporter $reporter): array
+    {
+        return array_map(function (int $index): string {
+            return round($index / 1000) . 'K';
+        }, $reporter->getOperationIndexes());
     }
 }

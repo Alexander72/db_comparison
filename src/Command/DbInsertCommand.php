@@ -53,12 +53,6 @@ class DbInsertCommand extends Command
         $progressBar->start();
         foreach ($this->getDataToInsert($input) as $index => $entityData) {
             if ($index == 0) {
-                // started at 19:25
-                // 5% - 19:27
-                // 10% - 19:29
-                // 20% - 19:33
-                // 50% - 19:43
-                // 100% - 20:00
                 $this->benchmarkService->start($input->getArgument('db') . '_insert', $entitiesCount);
             }
 
@@ -73,13 +67,6 @@ class DbInsertCommand extends Command
         $io->newLine(2);
 
         $io->success("$entitiesCount rows were successfully inserted in db in {$this->benchmarkService->getTotalExecutionTime()} seconds.");
-        $io->table(
-            [
-                'operationIndex',
-                'duration',
-            ],
-            $this->benchmarkService->getReport()
-        );
 
         return Command::SUCCESS;
     }

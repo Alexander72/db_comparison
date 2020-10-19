@@ -12,7 +12,6 @@ class BenchmarkService
     private int $currentOperation;
     private $outputFileDescriptor;
     private int $totalLogRecords;
-    private string $outputFileName;
 
 
     public function start(
@@ -23,18 +22,17 @@ class BenchmarkService
         $this->currentOperation = 0;
         $this->operationsCount = $operationsCount;
         $this->totalLogRecords = $totalLogRecords;
-        $this->outputFileName = self::OUTPUT_FILE_DIR . $name . '.txt';
-        $this->outputFileDescriptor = fopen($this->outputFileName, 'w');
+        $this->outputFileDescriptor = fopen(self::OUTPUT_FILE_DIR . $name . '.txt', 'w');
         $this->startTime = microtime(true);
     }
 
-    public function operationHasBeenMade()
+    public function operationHasBeenMade(): void
     {
-        $this->currentOperation++;
-
         if ($this->shouldBeLogged()) {
             $this->logOperation();
         }
+
+        $this->currentOperation++;
     }
 
     public function finish(): void
@@ -83,34 +81,6 @@ class BenchmarkService
             'operation' => $this->currentOperation,
             'timestamp' => microtime(true),
         ]) . "\n");
-    }
-
-    public function getReport(): array
-    {
-        $result = [];
-
-        $index = 0;
-        $previousOperation = null;
-
-        $f = fopen($this->outputFileName, 'r');
-        while ($operation = fgets($f)) {
-            $operation = unserialize($operation);
-
-            $previousOperationIndex = $previousOperation['operation'] ?? 0;
-            $previousOperationTimestamp = $previousOperation['timestamp'] ?? $this->startTime;
-
-            $result[] = [
-                $operation['operation'],
-                ($operation['timestamp'] - $previousOperationTimestamp) / ($operation['operation'] - $previousOperationIndex),
-            ];
-
-            $previousOperation = $operation;
-
-            $index++;
-        }
-        fclose($f);
-
-        return $result;
     }
 
     public function __destruct()
