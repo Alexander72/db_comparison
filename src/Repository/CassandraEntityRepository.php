@@ -31,7 +31,7 @@ class CassandraEntityRepository implements EntityRepository
         )
         ");
 
-        $this->session->execute($statement, null);
+        $this->session->execute($statement, []);
     }
 
     public function update(Entity $entity): void
