@@ -35,5 +35,9 @@ services:
         class: App\Repository\MysqlEntityRepository
         public: true
 
+    cassandra:
+        class: App\Repository\CassandraEntityRepository
+        public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
