@@ -11,12 +11,15 @@ class HomeController extends AbstractController
     {
         $reporter->loadData('mongo_insert');
         $length = $reporter->getOperationsCount();
+        $mongoInserts = $reporter->getOperationDurations();
+        $reporter->loadData('mysql_insert');
+        $mysqlInserts = $reporter->getOperationDurations();
         $data = [
             'insertData' => [
                 'xAxis' => $this->prettifyIndexes($reporter),
                 'data' => [
-                    'MySQL' => $this->generateRandomLogarithmicData($length),
-                    'Mongo' => $reporter->getOperationDurations(),
+                    'MySQL' => $mysqlInserts,
+                    'Mongo' => $mongoInserts,
                     'Cassandra' => $this->generateRandomLogarithmicData($length),
                 ]
             ],

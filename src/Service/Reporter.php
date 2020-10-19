@@ -10,6 +10,7 @@ class Reporter
 
     public function loadData(string $fileName): void
     {
+        $this->data = [];
         $f = fopen(self::REPORT_DIR . $fileName . '.txt', 'r');
         while ($row = fgets($f)) {
             $this->data[] = unserialize($row);
