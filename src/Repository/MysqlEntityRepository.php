@@ -31,6 +31,18 @@ class MysqlEntityRepository implements EntityRepository
         // TODO: Implement update() method.
     }
 
+    public function select(array $where): void
+    {
+        $query = "SELECT * FROM route WHERE ";
+        $query .= implode(' AND ', array_map(function ($field, $value) {
+            return "`$field` = '$value'";
+        }, array_keys($where), $where));
+
+        $data = $this->connection->query($query)->fetchAll();
+        $a = 1;
+    }
+
+
     public function selectById(int $entityId): Entity
     {
         // TODO: Implement selectById() method.

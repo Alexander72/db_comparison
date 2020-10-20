@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Entity;
 use App\Repository\Contract\EntityRepository;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Client;
 use MongoDB\Collection;
 
@@ -17,9 +18,16 @@ class MongoEntityRepository implements EntityRepository
         $this->collection->findOne();
     }
 
+    public function select(array $where): void
+    {
+        $this->collection->find($where);
+    }
+
     public function insert(array $entity): void
     {
-        $this->collection->insertOne($entity);
+        $row = $entity;
+        $row['departure'] = new UTCDateTime(\DateTime::createFromFormat('Y-m-d', $row['departure'])->getTimestamp() * 1000);
+        $this->collection->insertOne($row);
     }
 
     public function update(Entity $entity): void

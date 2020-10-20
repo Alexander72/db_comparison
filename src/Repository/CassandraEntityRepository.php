@@ -44,6 +44,11 @@ class CassandraEntityRepository implements EntityRepository
         // TODO: Implement selectById() method.
     }
 
+    public function select(array $where): void
+    {
+        // TODO: Implement select() method.
+    }
+
     public function deleteById(int $entityId): void
     {
         // TODO: Implement deleteById() method.
