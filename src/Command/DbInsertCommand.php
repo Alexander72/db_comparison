@@ -2,42 +2,23 @@
 
 namespace App\Command;
 
-use App\Repository\Contract\EntityRepository;
-use App\Service\BenchmarkService;
-use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class DbInsertCommand extends Command
+class DbInsertCommand extends AbstractCommand
 {
-    //const SOURCE_FILE_NAME = __DIR__ . '/../../input/routes_small.csv';
-    const SOURCE_FILE_NAME = __DIR__ . '/../../input/routes.csv';
     const INPUT_STRING_LENGTH = 54.5;
 
     protected static $defaultName = 'db:insert';
 
-    private ContainerInterface $container;
-
-    private BenchmarkService $benchmarkService;
-
-    public function __construct(
-        ContainerInterface $container,
-        BenchmarkService $benchmarkService
-    ) {
-        $this->container = $container;
-        $this->benchmarkService = $benchmarkService;
-        parent::__construct();
-    }
-
     protected function configure()
     {
-        $this
-            ->setDescription('Writes data to specific db and calculates latencies.')
-            ->addArgument('db', InputArgument::REQUIRED, 'Db to write. Should be one of the: mysql, mongodb, cassandra')
+        parent::configure();
+
+        $this->setDescription('Writes data to specific db and calculates latencies.')
             ->addOption('inputFile', 'i', InputOption::VALUE_REQUIRED, 'Source file to get data for insertion from. With only filename will look in input/ directory');
     }
 
@@ -80,11 +61,6 @@ class DbInsertCommand extends Command
             yield $rowIndex++ => $row;
         }
         fclose($f);
-    }
-
-    protected function getRepository(InputInterface $input): EntityRepository
-    {
-        return $this->container->get($input->getArgument('db'));
     }
 
     private function getEntityCount(InputInterface $input): int
