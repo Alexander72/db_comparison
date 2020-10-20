@@ -44,7 +44,7 @@ services:
   cassandra.database:
     image: cassandra
     volumes:
-      - ./var/database_data/cassandra:/var/lib/cannadra
+      - ./var/database_data/cassandra:/var/lib/cassandra
     ports:
       - 9042:9042
 
