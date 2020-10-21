@@ -9,52 +9,25 @@ class HomeController extends AbstractController
 {
     public function index(Reporter $reporter)
     {
-        $reporter->loadData('mongo_insert');
-        $length = $reporter->getOperationsCount();
-        $mongoInserts = $reporter->getOperationDurations();
-        $reporter->loadData('mysql_insert');
-        $mysqlInserts = $reporter->getOperationDurations();
-        $reporter->loadData('cassandra_insert');
-        $cassandraInserts = $reporter->getOperationDurations();
         $data = [
             'insertData' => [
-                'xAxis' => $this->prettifyIndexes($reporter),
+                'xAxis' => $this->prettifyIndexes($reporter->loadData('mysql_insert')),
                 'data' => [
-                    'MySQL' => $mysqlInserts,
-                    'Mongo' => $mongoInserts,
-                    'Cassandra' => $cassandraInserts,
+                    'MySQL' => $reporter->loadData('mysql_insert')->getOperationDurations(),
+                    'Mongo' => $reporter->loadData('mongo_insert')->getOperationDurations(),
+                    'Cassandra' => $reporter->loadData('cassandra_insert')->getOperationDurations(),
                 ]
             ],
             'updateData' => [
-                'xAxis' => $this->generateLogarithmicXAxis($length),
+                'xAxis' => $this->prettifyIndexes($reporter->loadData('mysql_select')),
                 'data' => [
-                    'MySQL' => $this->generateRandomLogarithmicData($length),
-                    'Mongo' => $this->generateRandomLogarithmicData($length),
-                    'Cassandra' => $this->generateRandomLogarithmicData($length),
+                    'MySQL' => $reporter->loadData('mysql_select')->getOperationDurations(),
+                    'Mongo' => $reporter->loadData('mongo_select')->getOperationDurations(),
+                    'Cassandra' => [],
                 ]
             ],
         ];
         return $this->render('pages/home.html.twig', $data);
-    }
-
-    protected function generateRandomLogarithmicData(int $length): array
-    {
-        $result = [];
-        for ($i = 1; $i <= $length; $i++) {
-            $result[] = 0;
-        }
-
-        return $result;
-    }
-
-    private function generateLogarithmicXAxis(int $length)
-    {
-        $result = [];
-        for ($i = 0; $i < $length; $i++) {
-            $result[] = empty($result) ? 1 : $result[count($result) - 1] * 2;
-        }
-
-        return $result;
     }
 
     private function prettifyIndexes(Reporter $reporter): array

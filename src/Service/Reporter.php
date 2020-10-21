@@ -8,7 +8,7 @@ class Reporter
 
     private array $data;
 
-    public function loadData(string $fileName): void
+    public function loadData(string $fileName): self
     {
         $this->data = [];
         $f = fopen(self::REPORT_DIR . $fileName . '.txt', 'r');
@@ -16,6 +16,8 @@ class Reporter
             $this->data[] = unserialize($row);
         }
         fclose($f);
+
+        return $this;
     }
 
     public function getOperationIndexes(): array
