@@ -10,5 +10,6 @@ interface EntityRepository
     public function update(Entity $entity): void;
     public function selectById(int $entityId): Entity;
     public function select(array $where): void;
+    public function selectByRange(string $field, $gt, $lt): void;
     public function deleteById(int $entityId): void;
 }

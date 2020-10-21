@@ -44,6 +44,11 @@ class CassandraEntityRepository implements EntityRepository
         // TODO: Implement selectById() method.
     }
 
+    public function selectByRange(string $field, $gt, $lt): void
+    {
+        // TODO: Implement selectByRange() method.
+    }
+
     public function select(array $where): void
     {
         // TODO: Implement select() method.

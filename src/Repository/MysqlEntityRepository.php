@@ -39,7 +39,13 @@ class MysqlEntityRepository implements EntityRepository
         }, array_keys($where), $where));
 
         $data = $this->connection->query($query)->fetchAll();
-        $a = 1;
+    }
+
+    public function selectByRange(string $field, $gt, $lt): void
+    {
+        $query = "SELECT * FROM route WHERE `$field` BETWEEN '$gt' AND '$lt'";
+
+        $data = $this->connection->query($query)->fetchAll();
     }
 
 
