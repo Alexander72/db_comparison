@@ -2,14 +2,10 @@
 
 namespace App\Command;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
+use App\Repository\Contract\EntityRepository;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
-class DbSelectCommand extends AbstractCommand
+class DbSelectCommand extends AbstractDbSelectCommand
 {
     protected static $defaultName = 'db:select';
 
@@ -30,38 +26,20 @@ class DbSelectCommand extends AbstractCommand
     protected function configure()
     {
         parent::configure();
-        $this->setDescription('Selects data from specific db and calculates latencies.');
+        $this->setDescription('Selects data from specific db by exact comparison and calculates latencies.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function doSelect(EntityRepository $repository): void
     {
-        $io = new SymfonyStyle($input, $output);
-        $repository = $this->getRepository($input);
-
-        $io->note('Starting data selection.');
-
-        $operationsCount = 100000;
-        $progressBar = $io->createProgressBar($operationsCount);
-        $this->benchmarkService->start($input->getArgument('db') . '_select', $operationsCount);
-        for ($i = 0; $i < $operationsCount; $i++) {
-            $repository->select($this->generateWhere());
-            $this->benchmarkService->operationHasBeenMade();
-            $progressBar->advance();
-        }
-        $this->benchmarkService->finish();
-        $progressBar->finish();
-        $io->newLine(2);
-
-        $io->success("$operationsCount selects were successfully made in db in {$this->benchmarkService->getTotalExecutionTime()} seconds.");
-
-        return Command::SUCCESS;
-    }
-
-    private function generateWhere(): array
-    {
-        return [
+        $where = [
             'origin' => self::CITIES[rand(0, count(self::CITIES) - 1)],
             'destination' => self::CITIES[rand(0, count(self::CITIES) - 1)],
         ];
+        $repository->select($where);
+    }
+
+    protected function getBenchmarkName(InputInterface $input): string
+    {
+        return $input->getArgument('db') . '_select';
     }
 }
