@@ -9,16 +9,29 @@
 {% block body %}
     <div class="row">
         <div class="col chart">
-            <canvas id="insertChart"></canvas>
-        </div>
-        <div class="col chart">
-            <canvas id="updateChart"></canvas>
+            <canvas id="insertData"></canvas>
         </div>
     </div>
+    <br>
+    <div class="row">
+        <div class="col chart">
+            <canvas id="selectData"></canvas>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col chart">
+            <canvas id="selectByRangeData"></canvas>
+        </div>
+    </div>
+    <br>
 {% endblock %}
 {% block javascripts %}
     <script>
-        renderChart($('#insertChart'), {{ insertData.data | json_encode | raw }}, {{ insertData.xAxis | json_encode | raw }});
-        renderChart($('#updateChart'), {{ updateData.data | json_encode | raw }}, {{ updateData.xAxis | json_encode | raw }});
+        var chartsData = {{ chartsData | json_encode | raw }};
+        for (let chartName in chartsData) {
+            const chartData = chartsData[chartName];
+            renderChart($('#' + chartName), chartData.title, chartData.xAxis, chartData.data);
+        }
     </script>
 {% endblock %}

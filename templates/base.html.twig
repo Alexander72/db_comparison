@@ -15,37 +15,45 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg==" crossorigin="anonymous"></script>
         <script>
-            function renderChart(ctx, data, xAxis) {
+            function renderChart(ctx, title, xAxis, data) {
+                const MongoColor = '#13aa52';
+                const MySqlColor = '#2b5d80';
+                const CassandraColor = '#bbe6fb';
+
+                const createDataset = function(label, data, color) {
+                    return {
+                        label: label,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: 'rgb(0, 0, 0, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                    };
+                }
+
+                let datasets = [];
+
+                if (data.MySQL) {
+                    datasets.push(createDataset('Mysql', data.MySQL, MySqlColor));
+                }
+                if (data.Mongo) {
+                    datasets.push(createDataset('MongoDB', data.Mongo, MongoColor));
+                }
+                if (data.Cassandra) {
+                    datasets.push(createDataset('Cassandra', data.Cassandra, CassandraColor));
+                }
+
                 new Chart(ctx, {
                     type: 'line',
+                    options: {
+                        title: {
+                            display: true,
+                            text: title
+                        }
+                    },
                     data: {
                         labels: xAxis,
-                        datasets: [
-                            {
-                                label: 'MySQL',
-                                data: data.MySQL,
-                                borderColor: 'rgb(127,187,255)',
-                                backgroundColor: 'rgb(0, 0, 0, 0)',
-                                pointRadius: 0,
-                                borderWidth: 1,
-                            },
-                            {
-                                label: 'Mongo',
-                                data: data.Mongo,
-                                borderColor: 'rgb(165,229,179)',
-                                backgroundColor: 'rgb(0, 0, 0, 0)',
-                                pointRadius: 0,
-                                borderWidth: 1,
-                            },
-                            {
-                                label: 'Cassandra',
-                                data: data.Cassandra,
-                                borderColor: 'rgb(215,194,139)',
-                                backgroundColor: 'rgb(0, 0, 0, 0)',
-                                pointRadius: 0,
-                                borderWidth: 1,
-                            }
-                        ]
+                        datasets: datasets
                     },
                 });
             }

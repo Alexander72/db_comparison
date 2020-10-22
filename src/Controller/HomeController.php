@@ -11,29 +11,48 @@ class HomeController extends AbstractController
     {
         $data = [
             'insertData' => [
-                'xAxis' => $this->prettifyIndexes($reporter->loadData('mysql_insert')),
+                'title' => 'Inserts',
+                'xAxis' => $this->getXAxis($reporter, 'mysql_insert'),
                 'data' => [
-                    'MySQL' => $reporter->loadData('mysql_insert')->getOperationDurations(),
-                    'Mongo' => $reporter->loadData('mongo_insert')->getOperationDurations(),
-                    'Cassandra' => $reporter->loadData('cassandra_insert')->getOperationDurations(),
+                    'MySQL' => $this->getData($reporter, 'mysql_insert'),
+                    'Mongo' => $this->getData($reporter, 'mongo_insert'),
+                    'Cassandra' => $this->getData($reporter, 'cassandra_insert'),
                 ]
             ],
-            'updateData' => [
-                'xAxis' => $this->prettifyIndexes($reporter->loadData('mysql_select')),
+            'selectData' => [
+                'title' => 'Selects by exact comparison',
+                'xAxis' => $this->getXAxis($reporter, 'mysql_select'),
                 'data' => [
-                    'MySQL' => $reporter->loadData('mysql_select')->getOperationDurations(),
-                    'Mongo' => $reporter->loadData('mongo_select')->getOperationDurations(),
-                    'Cassandra' => [],
+                    'MySQL' => $this->getData($reporter, 'mysql_select'),
+                    'Mongo' => $this->getData($reporter, 'mongo_select'),
+                ]
+            ],
+            'selectByRangeData' => [
+                'title' => 'Selects by range',
+                'xAxis' => $this->getXAxis($reporter, 'mysql_select_by_range'),
+                'data' => [
+                    'MySQL' => $this->getData($reporter, 'mysql_select_by_range'),
+                    'Mongo' => $this->getData($reporter, 'mongo_select_by_range'),
                 ]
             ],
         ];
-        return $this->render('pages/home.html.twig', $data);
+        return $this->render('pages/home.html.twig', ['chartsData' => $data]);
     }
 
     private function prettifyIndexes(Reporter $reporter): array
     {
         return array_map(function (int $index): string {
-            return round($index / 1000) . 'K';
+            return $index >= 1000 ? round($index / 1000) . 'K' : (string) $index;
         }, $reporter->getOperationIndexes());
+    }
+
+    private function getXAxis(Reporter $reporter, string $dataName): array
+    {
+        return $this->prettifyIndexes($reporter->loadData($dataName));
+    }
+
+    private function getData(Reporter $reporter, string $dataName): array
+    {
+        return $reporter->loadData($dataName)->getOperationDurations();
     }
 }
