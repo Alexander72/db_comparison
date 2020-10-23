@@ -22,6 +22,11 @@ class DbSelectByRangeCommand extends AbstractDbSelectCommand
         $this->setDescription('Selects data from specific db by range and calculates latencies.');
     }
 
+    protected function getBenchmarkName(InputInterface $input): string
+    {
+        return 'select_by_range';
+    }
+
     protected function doSelect(EntityRepository $repository): void
     {
         $daysLeast = rand(0, $this->daysTotal);
@@ -37,11 +42,6 @@ class DbSelectByRangeCommand extends AbstractDbSelectCommand
         $lt = $this->minDay->add(new DateInterval("P{$daysGreatest}D"));
 
         $repository->selectByRange('departure', $gt->format('Y-m-d'), $lt->format('Y-m-d'));
-    }
-
-    protected function getBenchmarkName(InputInterface $input): string
-    {
-        return $input->getArgument('db') . '_select_by_range';
     }
 
     protected function prepare(InputInterface $input)

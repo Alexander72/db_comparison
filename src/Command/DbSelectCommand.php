@@ -29,6 +29,11 @@ class DbSelectCommand extends AbstractDbSelectCommand
         $this->setDescription('Selects data from specific db by exact comparison and calculates latencies.');
     }
 
+    protected function getBenchmarkName(InputInterface $input): string
+    {
+        return 'select';
+    }
+
     protected function doSelect(EntityRepository $repository): void
     {
         $where = [
@@ -36,10 +41,5 @@ class DbSelectCommand extends AbstractDbSelectCommand
             'destination' => self::CITIES[rand(0, count(self::CITIES) - 1)],
         ];
         $repository->select($where);
-    }
-
-    protected function getBenchmarkName(InputInterface $input): string
-    {
-        return $input->getArgument('db') . '_select';
     }
 }

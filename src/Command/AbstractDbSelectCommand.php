@@ -22,7 +22,7 @@ abstract class AbstractDbSelectCommand extends AbstractCommand
         $io->note('Starting data selection.');
 
         $progressBar = $io->createProgressBar(static::OPERATIONS_COUNT);
-        $this->benchmarkService->start($this->getBenchmarkName($input), static::OPERATIONS_COUNT, static::TOTAL_LOG_RECORDS);
+        $this->benchmarkService->start($this->getFullBenchmarkName($input), static::OPERATIONS_COUNT, static::TOTAL_LOG_RECORDS);
         for ($i = 0; $i < static::OPERATIONS_COUNT; $i++) {
             $this->doSelect($repository);
 
@@ -41,6 +41,11 @@ abstract class AbstractDbSelectCommand extends AbstractCommand
     abstract protected function doSelect(EntityRepository $repository): void;
 
     abstract protected function getBenchmarkName(InputInterface $input): string;
+
+    private function getFullBenchmarkName(InputInterface $input): string
+    {
+        return $input->getArgument('db') . '_' . $this->getBenchmarkName();
+    }
 
     protected function prepare(InputInterface $input)
     {
