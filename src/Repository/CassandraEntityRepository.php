@@ -49,6 +49,11 @@ class CassandraEntityRepository implements EntityRepository
         // TODO: Implement selectByRange() method.
     }
 
+    public function selectAvgByRange(string $avgField, string $conditionField, $gt, $lt): void
+    {
+        // TODO: Implement selectAvgByRange() method.
+    }
+
     public function select(array $where): void
     {
         // TODO: Implement select() method.

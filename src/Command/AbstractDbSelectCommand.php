@@ -40,7 +40,7 @@ abstract class AbstractDbSelectCommand extends AbstractCommand
 
     abstract protected function doSelect(EntityRepository $repository): void;
 
-    abstract protected function getBenchmarkName(InputInterface $input): string;
+    abstract protected function getBenchmarkName(): string;
 
     private function getFullBenchmarkName(InputInterface $input): string
     {

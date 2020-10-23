@@ -34,6 +34,9 @@ class MongoEntityRepository implements EntityRepository
         ])->toArray();
     }
 
+    public function selectAvgByRange(string $avgField, string $conditionField, $gt, $lt): void
+    {
+    }
 
     public function insert(array $entity): void
     {

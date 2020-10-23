@@ -22,12 +22,27 @@ class DbSelectByRangeCommand extends AbstractDbSelectCommand
         $this->setDescription('Selects data from specific db by range and calculates latencies.');
     }
 
-    protected function getBenchmarkName(InputInterface $input): string
+    protected function getBenchmarkName(): string
     {
         return 'select_by_range';
     }
 
     protected function doSelect(EntityRepository $repository): void
+    {
+        $range = $this->getRangeEdges();
+
+        $repository->selectByRange('departure', $range['gt'], $range['lt']);
+    }
+
+    protected function prepare(InputInterface $input)
+    {
+        $this->minDay = new DateTimeImmutable('2019-02-10');
+        $this->maxDay = new DateTimeImmutable('2019-06-15');
+
+        $this->daysTotal = (int) $this->maxDay->diff($this->minDay)->format('%a');
+    }
+
+    protected function getRangeEdges(): array
     {
         $daysLeast = rand(0, $this->daysTotal);
         $daysGreatest = rand(0, $this->daysTotal);
@@ -41,14 +56,6 @@ class DbSelectByRangeCommand extends AbstractDbSelectCommand
         $gt = $this->minDay->add(new DateInterval("P{$daysLeast}D"));
         $lt = $this->minDay->add(new DateInterval("P{$daysGreatest}D"));
 
-        $repository->selectByRange('departure', $gt->format('Y-m-d'), $lt->format('Y-m-d'));
-    }
-
-    protected function prepare(InputInterface $input)
-    {
-        $this->minDay = new DateTimeImmutable('2019-02-10');
-        $this->maxDay = new DateTimeImmutable('2019-06-15');
-
-        $this->daysTotal = (int) $this->maxDay->diff($this->minDay)->format('%a');
+        return ['gt' => $gt->format('Y-m-d'), 'lt' => $lt->format('Y-m-d')];
     }
 }

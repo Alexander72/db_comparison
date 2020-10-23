@@ -48,6 +48,13 @@ class MysqlEntityRepository implements EntityRepository
         $data = $this->connection->query($query)->fetchAll();
     }
 
+    public function selectAvgByRange(string $avgField, string $conditionField, $gt, $lt): void
+    {
+        $query = "SELECT AVG($avgField) FROM route WHERE `$conditionField` BETWEEN '$gt' AND '$lt'";
+
+        $data = $this->connection->query($query)->fetchAll();
+    }
+
 
     public function selectById(int $entityId): Entity
     {

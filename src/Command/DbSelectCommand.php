@@ -29,7 +29,7 @@ class DbSelectCommand extends AbstractDbSelectCommand
         $this->setDescription('Selects data from specific db by exact comparison and calculates latencies.');
     }
 
-    protected function getBenchmarkName(InputInterface $input): string
+    protected function getBenchmarkName(): string
     {
         return 'select';
     }

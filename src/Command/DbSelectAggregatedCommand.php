@@ -5,16 +5,18 @@ namespace App\Command;
 use App\Repository\Contract\EntityRepository;
 use Symfony\Component\Console\Input\InputInterface;
 
-class DbSelectAggregatedCommand extends AbstractDbSelectCommand
+class DbSelectAggregatedCommand extends DbSelectByRangeCommand
 {
     protected static $defaultName = 'db:selectAggregated';
 
     protected function doSelect(EntityRepository $repository): void
     {
-        // TODO: Implement doSelect() method.
+        $range = $this->getRangeEdges();
+
+        $repository->selectAvgByRange('price', 'departure', $range['gt'], $range['lt']);
     }
 
-    protected function getBenchmarkName(InputInterface $input): string
+    protected function getBenchmarkName(): string
     {
         return 'select_aggregated';
     }
