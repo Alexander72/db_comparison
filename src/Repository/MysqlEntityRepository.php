@@ -50,7 +50,15 @@ class MysqlEntityRepository implements EntityRepository
 
     public function selectAvgByRange(string $avgField, string $conditionField, $gt, $lt): void
     {
-        $query = "SELECT AVG($avgField) FROM route WHERE `$conditionField` BETWEEN '$gt' AND '$lt'";
+        $query = "
+            SELECT 
+                DATE_FORMAT(departure, '%c') as month,
+                AVG(`$avgField`)
+            FROM route 
+            WHERE `$conditionField` BETWEEN '$gt' AND '$lt'
+            GROUP BY DATE_FORMAT(departure, '%c') 
+            ORDER BY DATE_FORMAT(departure, '%c')
+        ";
 
         $data = $this->connection->query($query)->fetchAll();
     }

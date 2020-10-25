@@ -28,14 +28,43 @@ class MongoEntityRepository implements EntityRepository
     {
         $data = $this->collection->find([
             $field => [
-                '$gt' => new UTCDateTime(DateTime::createFromFormat('Y-m-d', $gt)->getTimestamp() * 1000),
-                '$lt' => new UTCDateTime(DateTime::createFromFormat('Y-m-d', $lt)->getTimestamp() * 1000),
+                '$gt' => $this->getFormattedDate($gt),
+                '$lt' => $this->getFormattedDate($lt),
             ]
         ])->toArray();
     }
 
     public function selectAvgByRange(string $avgField, string $conditionField, $gt, $lt): void
     {
+        $data = $this->collection->aggregate([
+            [
+                '$match' => [
+                    $conditionField => [
+                        '$gt' => $this->getFormattedDate($gt),
+                        '$lt' => $this->getFormattedDate($lt),
+                    ]
+                ],
+            ],
+            [
+                '$group' => [
+                    '_id' => [
+                        '$dateToString' => [
+                            'date' => '$departure',
+                            'format' => '%m',
+                        ],
+                    ],
+                    'avg_price' => [
+                        '$avg' => '$price',
+                    ],
+                ],
+            ],
+            [
+                '$sort' => [
+                    '_id' => 1,
+                ],
+            ],
+        ])->toArray();
+        $a = 1;
     }
 
     public function insert(array $entity): void
@@ -58,6 +87,11 @@ class MongoEntityRepository implements EntityRepository
     public function deleteById(int $entityId): void
     {
         // TODO: Implement deleteById() method.
+    }
+
+    private function getFormattedDate($gt): UTCDateTime
+    {
+        return new UTCDateTime(DateTime::createFromFormat('Y-m-d', $gt)->getTimestamp() * 1000);
     }
 
 }
