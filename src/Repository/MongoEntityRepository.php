@@ -64,7 +64,6 @@ class MongoEntityRepository implements EntityRepository
                 ],
             ],
         ])->toArray();
-        $a = 1;
     }
 
     public function insert(array $entity): void
