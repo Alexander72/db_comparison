@@ -35,6 +35,14 @@ class HomeController extends AbstractController
                     'Mongo' => $this->getData($reporter, 'mongo_select_by_range'),
                 ]
             ],
+            'selectAvgByRange' => [
+                'title' => 'Selects aggregated data within specific range',
+                'xAxis' => $this->getXAxis($reporter, 'mongo_select_aggregated'),
+                'data' => [
+                    'MySQL' => $this->getData($reporter, 'mysql_select_aggregated'),
+                    'Mongo' => $this->getData($reporter, 'mongo_select_aggregated'),
+                ]
+            ],
         ];
         return $this->render('pages/home.html.twig', ['chartsData' => $data]);
     }
